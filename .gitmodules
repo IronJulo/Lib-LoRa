@@ -1,0 +1,3 @@
+[submodule "ECL"]
+	path = ECL
+	url = git@github.com:IronJulo/ECL.git
