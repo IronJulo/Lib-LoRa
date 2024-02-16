@@ -16,9 +16,15 @@ FetchContent_MakeAvailable(googletest)
 
 enable_testing()
 
-include_directories(src)
-include_directories(include)
-include_directories(test)
+add_library(LoRaLibrary INTERFACE)
+target_include_directories(LoRaLibrary INTERFACE .)
+target_include_directories(LoRaLibrary INTERFACE src)
+target_include_directories(LoRaLibrary INTERFACE include)
+
+add_subdirectory(ECL)
+
+
+target_link_libraries(LoRaLibrary INTERFACE EmbeddedCoreLibrary)
 
 add_executable(
     TestExecutable
@@ -27,6 +33,7 @@ add_executable(
 
 target_link_libraries(
   TestExecutable 
+  LoRaLibrary
   GTest::gtest_main
 )
 
