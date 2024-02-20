@@ -2,8 +2,9 @@
 #define LORA_ERROR_H
 
 enum class LoRaError {
-    OK,
-    UNIMPLEMENTED,
+    OK = 1,
+    UNIMPLEMENTED = 2,
+    UNSUPPORTED_VERSION = 4,
     UNKNOWN,
 };
 
