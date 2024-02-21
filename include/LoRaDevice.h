@@ -15,7 +15,6 @@ class LoRaDevice
 {
 private:
     ecl::Transport &m_transport;
-    ecl::AbstractGpio &m_chipSelect;
     ecl::AbstractGpio &m_reset;
     ecl::AbstractGpio &m_dio0;
 
@@ -24,7 +23,7 @@ private:
     long m_frequency;
 
 public:
-    LoRaDevice(ecl::Transport &transport, ecl::AbstractGpio &chipSelect, ecl::AbstractGpio &reset, ecl::AbstractGpio &dio0);
+    LoRaDevice(ecl::Transport &transport, ecl::AbstractGpio &reset, ecl::AbstractGpio &dio0);
     ~LoRaDevice() = default;
 
     LoRaError init(long frequency);

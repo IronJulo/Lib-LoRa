@@ -1,18 +1,16 @@
 #include "LoRaDevice.h"
 
 LoRaDevice::LoRaDevice(ecl::Transport &transport,
-                       ecl::AbstractGpio &chipSelect,
                        ecl::AbstractGpio &reset,
                        ecl::AbstractGpio &dio0) : m_transport(transport),
-                                                  m_chipSelect(chipSelect),
                                                   m_reset(reset),
                                                   m_dio0(dio0),
                                                   m_state(LoRaState::WAITING){};
 
 LoRaError LoRaDevice::init(long frequency)
 {
-    m_chipSelect.setDirection(ecl::Gpio::Direction::OUTPUT);
-    m_chipSelect.setState(ecl::Gpio::State::HIGH);
+    // m_chipSelect.setDirection(ecl::Gpio::Direction::OUTPUT);
+    // m_chipSelect.setState(ecl::Gpio::State::HIGH);
 
     // if (m_reset){ // TODO boolify this
     if (true)
@@ -31,6 +29,7 @@ LoRaError LoRaDevice::init(long frequency)
 
     if (version != 0x12)
         return LoRaError::UNSUPPORTED_VERSION;
+
     sleep();
     setFrequency(frequency);
 
@@ -49,7 +48,7 @@ LoRaError LoRaDevice::writeRegister(uint8_t address, uint8_t value)
 
 LoRaError LoRaDevice::transfer(uint8_t address, uint8_t &data)
 {
-    m_chipSelect.setState(ecl::Gpio::State::LOW);
+    // m_chipSelect.setState(ecl::Gpio::State::LOW);
     if (ecl::Transaction transaction = m_transport.startTransaction())
     {
         transaction.transfer(address);
@@ -60,7 +59,7 @@ LoRaError LoRaDevice::transfer(uint8_t address, uint8_t &data)
     {
         return LoRaError::UNKNOWN; // TODO
     }
-    m_chipSelect.setState(ecl::Gpio::State::HIGH);
+    // m_chipSelect.setState(ecl::Gpio::State::HIGH);
 
     return LoRaError::OK;
 }
