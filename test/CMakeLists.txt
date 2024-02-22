@@ -9,6 +9,8 @@ FetchContent_MakeAvailable(googletest)
 
 enable_testing()
 
+add_subdirectory(.)
+
 add_executable(
     TestExecutable
     test_main.cpp
