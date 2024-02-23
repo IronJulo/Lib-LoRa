@@ -74,9 +74,9 @@ LoRaError LoRaDevice::setFrequency(long frequency)
     m_frequency = frequency;
 
     uint64_t realFreq = ((uint64_t)frequency << 19) / 32000000;
-    writeRegister(LoRaRegister::RegFrfMsb, ((realFreq & 0b111111110000000000000000) >> 16));
-    writeRegister(LoRaRegister::RegFrfMid, ((realFreq & 0b000000001111111100000000) >> 8));
-    writeRegister(LoRaRegister::RegFrfLsb, ((realFreq & 0b000000000000000011111111) >> 0));
+    writeRegister(LoRaRegister::RegFrfMsb, (uint8_t)(((realFreq & 0b111111110000000000000000)) >> 16));
+    writeRegister(LoRaRegister::RegFrfMid, (uint8_t)(((realFreq & 0b000000001111111100000000)) >> 8));
+    writeRegister(LoRaRegister::RegFrfLsb, (uint8_t)(((realFreq & 0b000000000000000011111111)) >> 0));
 
     return LoRaError::OK; // TODO add a LoRaError res; res &= write...
 }

@@ -1,3 +1,5 @@
+#include <iostream>
+#include <iomanip>
 #include <gtest/gtest.h>
 
 #include "Transport.h"
@@ -10,7 +12,7 @@
 
 class FakeSpi : public ecl::Transport
 {
-private:
+public:
     const uint8_t registerAddressError = LoRaRegister::RegMax;
 
     uint8_t m_registerMap[LoRaRegister::RegMax]{0};
@@ -29,49 +31,50 @@ public:
     void setRWAddress(uint8_t address) { m_rwAddress = address; }
     uint8_t getRWAddress() { return m_rwAddress; }
 
-    bool lock()
+    bool lock() override
     {
         m_locked = true;
         m_rwAddress = registerAddressError;
         return m_locked;
     }
 
-    bool unLock()
+    bool unLock() override
     {
         m_locked = false;
         m_rwAddress = registerAddressError;
         return m_locked;
     }
 
-    void write(uint8_t data)
+    void write(uint8_t data) override
     {
         if (m_rwAddress == registerAddressError)
             return; // TODO throw
         m_registerMap[m_rwAddress & 0x7f] = data;
     }
 
-    uint8_t read()
+    uint8_t read() override
     {
         if (m_rwAddress == registerAddressError)
             return 0xFF; // TODO throw
         return m_registerMap[m_rwAddress & 0x7f];
     }
 
-    uint8_t transfer(uint8_t data)
+    uint8_t transfer(uint8_t data) override
     {
         if (!m_locked)
         {
-            return 0; // TODO throw
+            return 0xFF; // TODO throw
         }
+
         if (m_rwAddress == registerAddressError)
         {
             m_rwAddress = data;
-            return 0;
+            return 0xFF;
         }
-        if (m_rwAddress | 0x80)
+        if (m_rwAddress & 0x80)
         {
             write(data);
-            return 0;
+            return 0xFF;
         }
         else
         {
@@ -79,11 +82,11 @@ public:
         }
     }
 
-    void begin()
+    void begin() override
     {
     }
 
-    ecl::Transaction startTransaction()
+    ecl::Transaction startTransaction() override
     {
         return ecl::Transaction(static_cast<ecl::Transaction>(*this));
     }
@@ -184,12 +187,12 @@ TEST_F(FakeSpiFixture, TransferValueW)
 {
     fakeSpi1->lock();
     fakeSpi1->transfer(0x00 | 0x80);
-    ASSERT_EQ(0x00, fakeSpi1->transfer(0x42));
+    fakeSpi1->transfer(0x42);
     fakeSpi1->unLock();
 
     fakeSpi1->lock();
     fakeSpi1->transfer(0x00 & 0x7F);
-    ASSERT_EQ(0x00, fakeSpi1->transfer(0x00));
+    ASSERT_EQ(0x42, fakeSpi1->transfer(0x00));
     fakeSpi1->unLock();
 }
 
@@ -198,4 +201,12 @@ TEST_F(LoRaDeviceFixture, ReadRegister)
     uint8_t result = 0;
     loraDevice1->readRegister(0x00, result);
     ASSERT_EQ(0x00, result);
+}
+
+TEST_F(LoRaDeviceFixture, WriteRegister)
+{
+    loraDevice1->writeRegister(0x00, 0x42);
+    uint8_t result = 0;
+    loraDevice1->readRegister(0x00, result);
+    ASSERT_EQ(0x42, result);
 }
