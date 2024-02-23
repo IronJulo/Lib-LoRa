@@ -118,6 +118,8 @@ namespace LoRaRegister
     // 0x6E UNUSED
     // 0x6F UNUSED
     static const uint8_t RegPll = 0x70;
+
+    static const uint8_t RegMax = 0xFF;
 } // namespace LoRaRegister
 
 #endif /* LORA_REGISTER_H */
