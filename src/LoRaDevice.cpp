@@ -118,26 +118,52 @@ LoRaError LoRaDevice::setSpreadingFactor(uint8_t spreadingFactor)
     {
         spreadingFactor = 12;
     }
-    
-    uint8_t modemConfigRegister2 = 0;
-    readRegister(LoRaRegister::RegModemConfig2, modemConfigRegister2);
 
-    modemConfigRegister2 &= 0b00001111;             // clear the Spreading factor bits TODO use a mask
-    modemConfigRegister2 |= (spreadingFactor << 4); // add the new Spreading factor bits
+    uint8_t modemConfig2 = 0;
+    readRegister(LoRaRegister::RegModemConfig2, modemConfig2);
 
-    writeRegister(LoRaRegister::RegModemConfig2, modemConfigRegister2);
+    modemConfig2 &= 0b00001111;             // clear the Spreading factor bits TODO use a mask
+    modemConfig2 |= (spreadingFactor << 4); // add the new Spreading factor bits
+
+    writeRegister(LoRaRegister::RegModemConfig2, modemConfig2);
 
     return LoRaError::OK; // TODO add a LoRaError res; res &= read, res &= write, ...
 }
 
 LoRaError LoRaDevice::setCodingRate(uint8_t codingRade)
 {
-    return LoRaError::UNIMPLEMENTED;
+    if (codingRade < 1 | codingRade > 4)
+    {
+        codingRade = 1;
+    }
+
+    uint8_t modemConfig1 = 0;
+    readRegister(LoRaRegister::RegModemConfig1, modemConfig1);
+
+    modemConfig1 &= 0b11110001;        // clear the CodingRate bits TODO use a mask
+    modemConfig1 |= (codingRade << 1); // add the new CodingRate bits
+
+    writeRegister(LoRaRegister::RegModemConfig1, modemConfig1);
+
+    return LoRaError::OK; // TODO add a LoRaError res; res &= read, res &= write, ...
 }
 
 LoRaError LoRaDevice::setBandwith(uint8_t bandwith)
 {
-    return LoRaError::UNIMPLEMENTED;
+    if (bandwith > 9)
+    {
+        bandwith = 7;
+    }
+
+    uint8_t modemConfig1 = 0;
+    readRegister(LoRaRegister::RegModemConfig1, modemConfig1);
+
+    modemConfig1 &= 0b00001111;      // clear the Bandwith bits TODO use a mask
+    modemConfig1 |= (bandwith << 4); // add the new Bandwith bits
+
+    writeRegister(LoRaRegister::RegModemConfig1, modemConfig1);
+
+    return LoRaError::OK; // TODO add a LoRaError res; res &= read, res &= write, ...
 }
 
 LoRaError LoRaDevice::setChannel(uint8_t channel)

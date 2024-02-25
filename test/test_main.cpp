@@ -234,8 +234,8 @@ TEST_F(LoRaDeviceFixture, SetFrequency)
 
     uint64_t result = 0;
     result += ((((uint64_t)msb) << 16) & 0b111111110000000000000000);
-    result += ((((uint64_t)mid) << 8 ) & 0b000000001111111100000000);
-    result += ((((uint64_t)lsb) << 0 ) & 0b000000000000000011111111);
+    result += ((((uint64_t)mid) << 8) & 0b000000001111111100000000);
+    result += ((((uint64_t)lsb) << 0) & 0b000000000000000011111111);
     result = (FXOSC / (1 << 19)) * result;
 
     uint64_t expectedResult = (double)frequency / ((double)FXOSC / (1 << 19));
@@ -249,10 +249,10 @@ TEST_F(LoRaDeviceFixture, SetSpreadingFactor)
     uint8_t spreadingFactor = 12;
     ASSERT_NE(LoRaError::UNIMPLEMENTED, loraDevice1->setSpreadingFactor(spreadingFactor)) << "Warning Unimplemented Test";
 
-    uint8_t modemConfigRegister2 = 0;
-    loraDevice1->readRegister(LoRaRegister::RegModemConfig2, modemConfigRegister2);
+    uint8_t modemConfig2 = 0;
+    loraDevice1->readRegister(LoRaRegister::RegModemConfig2, modemConfig2);
 
-    ASSERT_EQ(spreadingFactor, (modemConfigRegister2 >> 4));
+    ASSERT_EQ(spreadingFactor, (modemConfig2 >> 4));
 }
 
 TEST_F(LoRaDeviceFixture, SetTooHighSpreadingFactor)
@@ -260,11 +260,11 @@ TEST_F(LoRaDeviceFixture, SetTooHighSpreadingFactor)
     uint8_t spreadingFactor = 50;
     ASSERT_NE(LoRaError::UNIMPLEMENTED, loraDevice1->setSpreadingFactor(spreadingFactor)) << "Warning Unimplemented Test";
 
-    uint8_t modemConfigRegister2 = 0;
-    loraDevice1->readRegister(LoRaRegister::RegModemConfig2, modemConfigRegister2);
+    uint8_t modemConfig2 = 0;
+    loraDevice1->readRegister(LoRaRegister::RegModemConfig2, modemConfig2);
 
-    ASSERT_NE(spreadingFactor, (modemConfigRegister2 >> 4));
-    ASSERT_EQ(12, (modemConfigRegister2 >> 4));
+    ASSERT_NE(spreadingFactor, (modemConfig2 >> 4));
+    ASSERT_EQ(12, (modemConfig2 >> 4));
 }
 
 TEST_F(LoRaDeviceFixture, SetTooLowSpreadingFactor)
@@ -272,16 +272,70 @@ TEST_F(LoRaDeviceFixture, SetTooLowSpreadingFactor)
     uint8_t spreadingFactor = 2;
     ASSERT_NE(LoRaError::UNIMPLEMENTED, loraDevice1->setSpreadingFactor(spreadingFactor)) << "Warning Unimplemented Test";
 
-    uint8_t modemConfigRegister2 = 0;
-    loraDevice1->readRegister(LoRaRegister::RegModemConfig2, modemConfigRegister2);
+    uint8_t modemConfig2 = 0;
+    loraDevice1->readRegister(LoRaRegister::RegModemConfig2, modemConfig2);
 
-    ASSERT_NE(spreadingFactor, (modemConfigRegister2 >> 4));
-    ASSERT_EQ(6, (modemConfigRegister2 >> 4));
+    ASSERT_NE(spreadingFactor, (modemConfig2 >> 4));
+    ASSERT_EQ(6, (modemConfig2 >> 4));
 }
 
 TEST_F(LoRaDeviceFixture, SetCodingRate)
 {
-    ASSERT_NE(LoRaError::UNIMPLEMENTED, loraDevice1->setCodingRate(30)) << "Warning Unimplemented Test";
+    uint8_t codingRate = 1;
+    ASSERT_NE(LoRaError::UNIMPLEMENTED, loraDevice1->setCodingRate(codingRate)) << "Warning Unimplemented Test";
+
+    uint8_t modemConfig1 = 0;
+    loraDevice1->readRegister(LoRaRegister::RegModemConfig1, modemConfig1);
+    std::cout << "value: " << (int)(modemConfig1) << std::endl;
+
+    ASSERT_EQ(codingRate, ((modemConfig1 & 0b00001110) >> 1));
+}
+
+TEST_F(LoRaDeviceFixture, SetTooHighCodingRate)
+{
+    uint8_t codingRate = 500;
+    ASSERT_NE(LoRaError::UNIMPLEMENTED, loraDevice1->setCodingRate(codingRate)) << "Warning Unimplemented Test";
+
+    uint8_t modemConfig1 = 0;
+    loraDevice1->readRegister(LoRaRegister::RegModemConfig1, modemConfig1);
+
+    ASSERT_NE(codingRate, ((modemConfig1 & 0b00001110) >> 1));
+    ASSERT_EQ(1, ((modemConfig1 & 0b00001110) >> 1));
+}
+
+TEST_F(LoRaDeviceFixture, SetTooLowCodingRate)
+{
+    uint8_t codingRate = 0;
+    ASSERT_NE(LoRaError::UNIMPLEMENTED, loraDevice1->setCodingRate(codingRate)) << "Warning Unimplemented Test";
+
+    uint8_t modemConfig1 = 0;
+    loraDevice1->readRegister(LoRaRegister::RegModemConfig1, modemConfig1);
+
+    ASSERT_NE(codingRate, ((modemConfig1 & 0b00001110) >> 1));
+    ASSERT_EQ(1, ((modemConfig1 & 0b00001110) >> 1));
+}
+
+TEST_F(LoRaDeviceFixture, SetBandwith)
+{
+    uint8_t bandwith = 1;
+    ASSERT_NE(LoRaError::UNIMPLEMENTED, loraDevice1->setBandwith(bandwith)) << "Warning Unimplemented Test";
+
+    uint8_t modemConfig1 = 0;
+    loraDevice1->readRegister(LoRaRegister::RegModemConfig1, modemConfig1);
+
+    ASSERT_EQ(bandwith, (modemConfig1 >> 4));
+}
+
+TEST_F(LoRaDeviceFixture, SetTooHighBandwith)
+{
+    uint8_t bandwith = 10;
+    ASSERT_NE(LoRaError::UNIMPLEMENTED, loraDevice1->setBandwith(bandwith)) << "Warning Unimplemented Test";
+
+    uint8_t modemConfig1 = 0;
+    loraDevice1->readRegister(LoRaRegister::RegModemConfig1, modemConfig1);
+
+    ASSERT_NE(bandwith, (modemConfig1 >> 4));
+    ASSERT_EQ(7, (modemConfig1 >> 4));
 }
 
 TEST_F(LoRaDeviceFixture, SetChannel)
