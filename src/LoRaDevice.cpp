@@ -148,18 +148,18 @@ LoRaError LoRaDevice::setCodingRate(uint8_t codingRade)
     return LoRaError::OK; // TODO add a LoRaError res; res &= read, res &= write, ...
 }
 
-LoRaError LoRaDevice::setBandwith(uint8_t bandwith)
+LoRaError LoRaDevice::setBandwidth(uint8_t bandwidth)
 {
-    if (bandwith > 9)
+    if (bandwidth > 9)
     {
-        bandwith = 7;
+        bandwidth = 7;
     }
 
     uint8_t modemConfig1 = 0;
     readRegister(LoRaRegister::RegModemConfig1, modemConfig1);
 
-    modemConfig1 &= 0b00001111;      // clear the Bandwith bits TODO use a mask
-    modemConfig1 |= (bandwith << 4); // add the new Bandwith bits
+    modemConfig1 &= 0b00001111;      // clear the Bandwidth bits TODO use a mask
+    modemConfig1 |= (bandwidth << 4); // add the new Bandwidth bits
 
     writeRegister(LoRaRegister::RegModemConfig1, modemConfig1);
 

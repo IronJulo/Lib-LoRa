@@ -5,6 +5,7 @@
 #include "LoRaState.h"
 #include "LoRaRegister.h"
 #include "LoRaMode.h"
+#include "LoRaBandwidth.h"
 
 #include "Transport.h"
 #include "Transaction.h"
@@ -58,7 +59,7 @@ public:
     LoRaError setFrequency(long frequency);
     LoRaError setSpreadingFactor(uint8_t spreadingFactor);
     LoRaError setCodingRate(uint8_t codingRade);
-    LoRaError setBandwith(uint8_t bandwith);
+    LoRaError setBandwidth(uint8_t bandwith);
     LoRaError setChannel(uint8_t channel);
 };
 
