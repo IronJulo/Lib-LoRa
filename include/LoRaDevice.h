@@ -10,9 +10,12 @@
 #include "Transaction.h"
 #include "AbstractGpio.h"
 
-
 class LoRaDevice
 {
+private:
+    // oscillator frequency
+    const int FXOSC = 32000000;
+
 private:
     ecl::Transport &m_transport;
     ecl::AbstractGpio &m_reset;
@@ -53,6 +56,10 @@ public:
 
     LoRaError sleep();
     LoRaError setFrequency(long frequency);
+    LoRaError setSpreadingFactor(uint8_t spreadingFactor);
+    LoRaError setCodingRate(uint8_t codingRade);
+    LoRaError setBandwith(uint8_t bandwith);
+    LoRaError setChannel(uint8_t channel);
 };
 
 #endif /* LORA_DEVICE_H */

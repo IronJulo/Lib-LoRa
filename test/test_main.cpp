@@ -139,6 +139,10 @@ public:
 class LoRaDeviceFixture : public testing::Test
 {
 public:
+    /*
+        This value is available in the library but we dont want the tests to change if the library change.
+    */
+    const int FXOSC = 32000000;
     LoRaDevice *loraDevice1;
     FakeSpi *fakeSpi1;
     FakeGpio *fakeResetGPIO;
@@ -209,4 +213,48 @@ TEST_F(LoRaDeviceFixture, WriteRegister)
     uint8_t result = 0;
     loraDevice1->readRegister(0x00, result);
     ASSERT_EQ(0x42, result);
+}
+
+TEST_F(LoRaDeviceFixture, SetFrequency)
+{
+    long frequency = 433E6;
+    ASSERT_NE(LoRaError::UNIMPLEMENTED, loraDevice1->setFrequency(frequency)) << "Warning Unimplemented Test";
+
+    uint8_t msb = 0;
+    loraDevice1->readRegister(LoRaRegister::RegFrfMsb, msb);
+    uint8_t mid = 0;
+    loraDevice1->readRegister(LoRaRegister::RegFrfMid, mid);
+    uint8_t lsb = 0;
+    loraDevice1->readRegister(LoRaRegister::RegFrfLsb, lsb);
+
+    /*
+        Now this is kinda odd for a test but the value written by setFrequency is modified by the library so we'll do the math here
+        Actually we're testing that the library is using the formula from the datasheet.
+    */
+
+    uint64_t result = 0;
+    result += ((((uint64_t)msb) << 16) & 0b111111110000000000000000);
+    result += ((((uint64_t)mid) << 8 ) & 0b000000001111111100000000);
+    result += ((((uint64_t)lsb) << 0 ) & 0b000000000000000011111111);
+    result = (FXOSC / (1 << 19)) * result;
+
+    uint64_t expectedResult = (double)frequency / ((double)FXOSC / (1 << 19));
+    expectedResult = (FXOSC / (1 << 19)) * expectedResult;
+
+    ASSERT_EQ(expectedResult, result);
+}
+
+TEST_F(LoRaDeviceFixture, SetSpreadingFactor)
+{
+    ASSERT_NE(LoRaError::UNIMPLEMENTED, loraDevice1->setSpreadingFactor(20)) << "Warning Unimplemented Test";
+}
+
+TEST_F(LoRaDeviceFixture, SetCodingRate)
+{
+    ASSERT_NE(LoRaError::UNIMPLEMENTED, loraDevice1->setCodingRate(30)) << "Warning Unimplemented Test";
+}
+
+TEST_F(LoRaDeviceFixture, SetChannel)
+{
+    ASSERT_NE(LoRaError::UNIMPLEMENTED, loraDevice1->setChannel(40)) << "Warning Unimplemented Test";
 }
