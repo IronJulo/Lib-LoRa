@@ -76,10 +76,9 @@ LoRaError LoRaDevice::setFrequency(long frequency)
     /*
     from sx1276_77_78_79.pdf # 4.1.1 (p.37)
 
-              
     Fstep = FXOSC / (2^19)
       ^       ^
-      |       | 
+      |       |
       |       |
       |       Oscillator frequency
       Frequency step (smallest change in frequency that can be achieved)
@@ -94,38 +93,54 @@ LoRaError LoRaDevice::setFrequency(long frequency)
     we can rewrite it as:
 
     FRF(23, 0) = (Ffr * (2^19)) / FXOSC
-    
-    int:
+
+    Help:
         From Sandeepmistry's Library
-        
+
         uint64_t frf = ((uint64_t)frequency << 19) / FXOSC;
     */
-   
+
     uint64_t frf = (double)frequency / ((double)FXOSC / (1 << 19));
     writeRegister(LoRaRegister::RegFrfMsb, (uint8_t)(((frf & 0b111111110000000000000000)) >> 16));
     writeRegister(LoRaRegister::RegFrfMid, (uint8_t)(((frf & 0b000000001111111100000000)) >> 8));
     writeRegister(LoRaRegister::RegFrfLsb, (uint8_t)(((frf & 0b000000000000000011111111)) >> 0));
 
-    return LoRaError::OK; // TODO add a LoRaError res; res &= write...
+    return LoRaError::OK; // TODO add a LoRaError res; res &= write, ...
 }
 
 LoRaError LoRaDevice::setSpreadingFactor(uint8_t spreadingFactor)
 {
-    return LoRaError::UNIMPLEMENTED;
+    if (spreadingFactor < 6)
+    {
+        spreadingFactor = 6;
+    }
+    else if (spreadingFactor > 12)
+    {
+        spreadingFactor = 12;
+    }
+    
+    uint8_t modemConfigRegister2 = 0;
+    readRegister(LoRaRegister::RegModemConfig2, modemConfigRegister2);
+
+    modemConfigRegister2 &= 0b00001111;             // clear the Spreading factor bits TODO use a mask
+    modemConfigRegister2 |= (spreadingFactor << 4); // add the new Spreading factor bits
+
+    writeRegister(LoRaRegister::RegModemConfig2, modemConfigRegister2);
+
+    return LoRaError::OK; // TODO add a LoRaError res; res &= read, res &= write, ...
 }
- 
+
 LoRaError LoRaDevice::setCodingRate(uint8_t codingRade)
 {
     return LoRaError::UNIMPLEMENTED;
 }
- 
+
 LoRaError LoRaDevice::setBandwith(uint8_t bandwith)
 {
     return LoRaError::UNIMPLEMENTED;
 }
- 
+
 LoRaError LoRaDevice::setChannel(uint8_t channel)
 {
     return LoRaError::UNIMPLEMENTED;
 }
- 
