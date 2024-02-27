@@ -15,10 +15,10 @@ LoRaError LoRaDevice::init(long frequency)
     // if (m_reset){ // TODO boolify this
     if (true)
     {
-        m_reset.setDirection(ecl::Gpio::Direction::OUTPUT);
-        m_reset.setState(ecl::Gpio::State::LOW);
+        m_reset.setDirection(ecl::Gpio::Direction::Output);
+        m_reset.setState(ecl::Gpio::State::Low);
         // delay(10); // TODO mock time
-        m_reset.setState(ecl::Gpio::State::HIGH);
+        m_reset.setState(ecl::Gpio::State::High);
         // delay(10); // TODO mock time
     }
 

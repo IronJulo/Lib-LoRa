@@ -18,25 +18,25 @@ private:
 
 public:
     LoRaError() = default;
-    LoRaError(Value value) : m_value(value) { }
+    LoRaError(Value value) : m_value(value) {}
     ~LoRaError() = default;
-    constexpr operator Value() const { return m_value; }
+    operator Value() const { return m_value; }
 
     explicit operator bool() const = delete;
-    constexpr bool operator==(LoRaError other) const { return m_value == other.m_value; }
-    constexpr bool operator!=(LoRaError other) const { return m_value != other.m_value; }
+    bool operator==(LoRaError other) const { return m_value == other.m_value; }
+    bool operator!=(LoRaError other) const { return m_value != other.m_value; }
 
-    constexpr const char* toString() const
+    const char *toString() const
     {
         switch (m_value)
         {
-        case Value::OK :
+        case Value::OK:
             return "OK";
             break;
-        case Value::UNIMPLEMENTED :
+        case Value::UNIMPLEMENTED:
             return "UNIMPLEMENTED";
             break;
-        case Value::UNSUPPORTED_VERSION :
+        case Value::UNSUPPORTED_VERSION:
             return "UNSUPPORTED_VERSION";
             break;
         default:
@@ -44,7 +44,6 @@ public:
             break;
         }
     }
-
 };
 
 #endif /* LORA_ERROR_H */
