@@ -1,4 +1,5 @@
 #include "LoRaDevice.h"
+#include <Arduino.h>
 
 LoRaDevice::LoRaDevice(ecl::Transport &transport,
                        ecl::AbstractGpio &reset,
@@ -25,15 +26,27 @@ LoRaError LoRaDevice::init(long frequency)
     m_transport.begin();
 
     uint8_t version;
-    readRegister(LoRaRegister::RegVersion, version);
+    LoRaError error = readRegister(LoRaRegister::RegVersion, version);
+    if (LoRaError::OK != error){
+        return LoRaError::READ_ERROR;
+    }
+
+    Serial.print("Version: ");
+    Serial.println(version);
 
     if (version != 0x12)
         return LoRaError::UNSUPPORTED_VERSION;
 
-    sleep();
-    setFrequency(frequency);
+    error = sleep();
+    if (LoRaError::OK != error){
+        return LoRaError::WRITE_ERROR;
+    }
+    error = setFrequency(frequency);
+    if (LoRaError::OK != error){
+        return LoRaError::WRITE_ERROR;
+    }
 
-    return LoRaError::UNIMPLEMENTED;
+    return LoRaError::OK;
 }
 
 LoRaError LoRaDevice::readRegister(uint8_t address, uint8_t &data)
@@ -51,16 +64,19 @@ LoRaError LoRaDevice::transfer(uint8_t address, uint8_t &data)
     // m_chipSelect.setState(ecl::Gpio::State::LOW);
     if (ecl::Transaction transaction = m_transport.startTransaction())
     {
+        Serial.println("Ok Start transaction");
         transaction.transfer(address);
         uint8_t response = transaction.transfer(data);
         data = response;
     }
     else
     {
+        Serial.println("ERROR can't Start transaction");
         return LoRaError::UNKNOWN; // TODO
     }
     // m_chipSelect.setState(ecl::Gpio::State::HIGH);
 
+    Serial.println("Stop transaction");
     return LoRaError::OK;
 }
 

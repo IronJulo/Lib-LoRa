@@ -8,6 +8,8 @@ public:
     {
         OK,
         UNIMPLEMENTED,
+        READ_ERROR,
+        WRITE_ERROR,
         UNSUPPORTED_VERSION,
 
         UNKNOWN,
