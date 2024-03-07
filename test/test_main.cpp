@@ -38,7 +38,7 @@ public:
         return m_locked;
     }
 
-    bool unLock() override
+    bool unlock() override
     {
         m_locked = false;
         m_rwAddress = registerAddressError;
@@ -184,7 +184,7 @@ TEST_F(FakeSpiFixture, TransferValueR)
     fakeSpi1->lock();
     fakeSpi1->transfer(0x00 & 0x7F);
     ASSERT_EQ(0x00, fakeSpi1->transfer(0x00));
-    fakeSpi1->unLock();
+    fakeSpi1->unlock();
 }
 
 TEST_F(FakeSpiFixture, TransferValueW)
@@ -192,12 +192,12 @@ TEST_F(FakeSpiFixture, TransferValueW)
     fakeSpi1->lock();
     fakeSpi1->transfer(0x00 | 0x80);
     fakeSpi1->transfer(0x42);
-    fakeSpi1->unLock();
+    fakeSpi1->unlock();
 
     fakeSpi1->lock();
     fakeSpi1->transfer(0x00 & 0x7F);
     ASSERT_EQ(0x42, fakeSpi1->transfer(0x00));
-    fakeSpi1->unLock();
+    fakeSpi1->unlock();
 }
 
 TEST_F(LoRaDeviceFixture, ReadRegister)
