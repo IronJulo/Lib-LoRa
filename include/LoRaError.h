@@ -14,6 +14,7 @@ public:
         READ_ERROR = 0b100,
         WRITE_ERROR = 0b1000,
         UNSUPPORTED_VERSION = 0b10000,
+        TRANSACTION_ERROR = 0b100000,
 
         UNKNOWN //= 0b1000000000000000000000000000000000000000000000000000000000000000,
     };
@@ -25,6 +26,7 @@ private:
 public:
     LoRaError() = default;
     LoRaError(Value value) : m_bitMaskValues(value) /*, m_lastValue(value)*/ {}
+    LoRaError(u_int64_t value) : m_bitMaskValues(value) /*, m_lastValue(value)*/ {}
     ~LoRaError() = default;
 
     // operator Value() const { return m_lastValue; }
@@ -35,20 +37,20 @@ public:
 
     bool has(LoRaError other) const { return (m_bitMaskValues & other.m_bitMaskValues) == 1; }
     bool has(LoRaError::Value value) const { return (m_bitMaskValues & value) == 1; }
-
     bool hasNot(LoRaError other) const { return !this->has(other); }
     bool hasNot(LoRaError::Value value) const { return !this->has(value); }
 
     bool is(LoRaError other) const { return *this == other; }
     bool is(LoRaError::Value value) const { return *this == value; }
-
     bool isNot(LoRaError other) const { return !this->is(other); }
     bool isNot(LoRaError::Value value) const { return !this->is(value); }
+
+    LoRaError operator|(const LoRaError &other) const { return LoRaError(m_bitMaskValues | other.m_bitMaskValues); };
+    LoRaError &operator|=(const LoRaError &other) { m_bitMaskValues |= other.m_bitMaskValues; return *this; };
 
     // Implies that OK is "good"
     // explicit operator bool() const { return this->is(OK); };
     explicit operator bool() const = delete;
-
 
     bool operator==(LoRaError::Value value) const { return m_bitMaskValues == value; }
     bool operator!=(LoRaError::Value value) const { return m_bitMaskValues != value; }

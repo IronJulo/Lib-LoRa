@@ -1,6 +1,8 @@
 #include "LoRaDevice.h"
 #include <Arduino.h>
 
+#define LORA_OK LoRaError::OK
+
 LoRaDevice::LoRaDevice(ecl::Transport &transport,
                        ecl::AbstractGpio &reset,
                        ecl::AbstractGpio &dio0) : m_transport(transport),
@@ -10,9 +12,6 @@ LoRaDevice::LoRaDevice(ecl::Transport &transport,
 
 LoRaError LoRaDevice::init(long frequency)
 {
-    // m_chipSelect.setDirection(ecl::Gpio::Direction::OUTPUT);
-    // m_chipSelect.setState(ecl::Gpio::State::HIGH);
-
     // if (m_reset){ // TODO boolify this
     if (true)
     {
@@ -26,27 +25,24 @@ LoRaError LoRaDevice::init(long frequency)
     m_transport.begin();
 
     uint8_t version;
-    LoRaError error = readRegister(LoRaRegister::RegVersion, version);
-    if (LoRaError::OK != error){
-        return LoRaError::READ_ERROR;
-    }
+    LoRaError error = LoRaError::OK;
+    error = readRegister(LoRaRegister::RegVersion, version);
 
-    Serial.print("Version: ");
-    Serial.println(version);
+    if (error.isNot(LoRaError::OK))
+        return LoRaError::READ_ERROR;
 
     if (version != 0x12)
         return LoRaError::UNSUPPORTED_VERSION;
 
     error = sleep();
-    if (LoRaError::OK != error){
+    if (error.isNot(LoRaError::OK))
         return LoRaError::WRITE_ERROR;
-    }
-    error = setFrequency(frequency);
-    if (LoRaError::OK != error){
-        return LoRaError::WRITE_ERROR;
-    }
 
-    return LoRaError::OK;
+    error = setFrequency(frequency);
+    if (error.isNot(LoRaError::OK))
+        return LoRaError::WRITE_ERROR;
+
+    return error;
 }
 
 LoRaError LoRaDevice::readRegister(uint8_t address, uint8_t &data)
@@ -61,20 +57,17 @@ LoRaError LoRaDevice::writeRegister(uint8_t address, uint8_t value)
 
 LoRaError LoRaDevice::transfer(uint8_t address, uint8_t &data)
 {
-    // m_chipSelect.setState(ecl::Gpio::State::LOW);
-    if (ecl::Transaction transaction = m_transport.startTransaction())
+    if (ecl::Transaction transaction = m_transport.startTransaction()) // Start transaction
     {
-        Serial.println("Ok Start transaction");
         transaction.transfer(address);
         uint8_t response = transaction.transfer(data);
         data = response;
-    }
+    } // End transaction automatically on scope exit
     else
     {
         Serial.println("ERROR can't Start transaction");
-        return LoRaError::UNKNOWN; // TODO
+        return LoRaError::TRANSACTION_ERROR;
     }
-    // m_chipSelect.setState(ecl::Gpio::State::HIGH);
 
     Serial.println("Stop transaction");
     return LoRaError::OK;
@@ -116,16 +109,18 @@ LoRaError LoRaDevice::setFrequency(long frequency)
         uint64_t frf = ((uint64_t)frequency << 19) / FXOSC;
     */
 
+    LoRaError error = LORA_OK;
     uint64_t frf = (double)frequency / ((double)FXOSC / (1 << 19));
-    writeRegister(LoRaRegister::RegFrfMsb, (uint8_t)(((frf & 0b111111110000000000000000)) >> 16));
-    writeRegister(LoRaRegister::RegFrfMid, (uint8_t)(((frf & 0b000000001111111100000000)) >> 8));
-    writeRegister(LoRaRegister::RegFrfLsb, (uint8_t)(((frf & 0b000000000000000011111111)) >> 0));
+    error |= writeRegister(LoRaRegister::RegFrfMsb, (uint8_t)(((frf & 0b111111110000000000000000)) >> 16));
+    error |= writeRegister(LoRaRegister::RegFrfMid, (uint8_t)(((frf & 0b000000001111111100000000)) >> 8));
+    error |= writeRegister(LoRaRegister::RegFrfLsb, (uint8_t)(((frf & 0b000000000000000011111111)) >> 0));
 
-    return LoRaError::OK; // TODO add a LoRaError res; res &= write, ...
+    return error;
 }
 
 LoRaError LoRaDevice::setSpreadingFactor(uint8_t spreadingFactor)
 {
+    LoRaError error = LORA_OK;
     if (spreadingFactor < 6)
     {
         spreadingFactor = 6;
@@ -136,50 +131,52 @@ LoRaError LoRaDevice::setSpreadingFactor(uint8_t spreadingFactor)
     }
 
     uint8_t modemConfig2 = 0;
-    readRegister(LoRaRegister::RegModemConfig2, modemConfig2);
+    error |= readRegister(LoRaRegister::RegModemConfig2, modemConfig2);
 
     modemConfig2 &= 0b00001111;             // clear the Spreading factor bits TODO use a mask
     modemConfig2 |= (spreadingFactor << 4); // add the new Spreading factor bits
 
-    writeRegister(LoRaRegister::RegModemConfig2, modemConfig2);
+    error |= writeRegister(LoRaRegister::RegModemConfig2, modemConfig2);
 
-    return LoRaError::OK; // TODO add a LoRaError res; res &= read, res &= write, ...
+    return error;
 }
 
 LoRaError LoRaDevice::setCodingRate(uint8_t codingRade)
 {
+    LoRaError error = LORA_OK;
     if (codingRade < 1 | codingRade > 4)
     {
         codingRade = 1;
     }
 
     uint8_t modemConfig1 = 0;
-    readRegister(LoRaRegister::RegModemConfig1, modemConfig1);
+    error |= readRegister(LoRaRegister::RegModemConfig1, modemConfig1);
 
     modemConfig1 &= 0b11110001;        // clear the CodingRate bits TODO use a mask
     modemConfig1 |= (codingRade << 1); // add the new CodingRate bits
 
-    writeRegister(LoRaRegister::RegModemConfig1, modemConfig1);
+    error |= writeRegister(LoRaRegister::RegModemConfig1, modemConfig1);
 
-    return LoRaError::OK; // TODO add a LoRaError res; res &= read, res &= write, ...
+    return error;
 }
 
 LoRaError LoRaDevice::setBandwidth(uint8_t bandwidth)
 {
+    LoRaError error = LORA_OK;
     if (bandwidth > 9)
     {
         bandwidth = 7;
     }
 
     uint8_t modemConfig1 = 0;
-    readRegister(LoRaRegister::RegModemConfig1, modemConfig1);
+    error |= readRegister(LoRaRegister::RegModemConfig1, modemConfig1);
 
-    modemConfig1 &= 0b00001111;      // clear the Bandwidth bits TODO use a mask
+    modemConfig1 &= 0b00001111;       // clear the Bandwidth bits TODO use a mask
     modemConfig1 |= (bandwidth << 4); // add the new Bandwidth bits
 
-    writeRegister(LoRaRegister::RegModemConfig1, modemConfig1);
+    error |= writeRegister(LoRaRegister::RegModemConfig1, modemConfig1);
 
-    return LoRaError::OK; // TODO add a LoRaError res; res &= read, res &= write, ...
+    return error;
 }
 
 LoRaError LoRaDevice::setChannel(uint8_t channel)
