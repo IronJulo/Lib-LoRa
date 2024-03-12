@@ -1,5 +1,4 @@
 #include "LoRaDevice.h"
-#include <Arduino.h>
 
 #define LORA_OK LoRaError::OK
 
@@ -65,11 +64,9 @@ LoRaError LoRaDevice::transfer(uint8_t address, uint8_t &data)
     } // End transaction automatically on scope exit
     else
     {
-        Serial.println("ERROR can't Start transaction");
         return LoRaError::TRANSACTION_ERROR;
     }
 
-    Serial.println("Stop transaction");
     return LoRaError::OK;
 }
 
@@ -144,7 +141,7 @@ LoRaError LoRaDevice::setSpreadingFactor(uint8_t spreadingFactor)
 LoRaError LoRaDevice::setCodingRate(uint8_t codingRade)
 {
     LoRaError error = LORA_OK;
-    if (codingRade < 1 | codingRade > 4)
+    if ((codingRade < 1) | (codingRade > 4))
     {
         codingRade = 1;
     }
