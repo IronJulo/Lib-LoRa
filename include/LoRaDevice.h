@@ -25,6 +25,7 @@ private:
     LoRaState m_state;
 
     long m_frequency;
+    bool m_impliciteHeader = false; 
 
 public:
     LoRaDevice(ecl::Transport &transport, ecl::AbstractGpio &reset, ecl::AbstractGpio &dio0);
@@ -61,6 +62,10 @@ public:
     LoRaError setCodingRate(uint8_t codingRade);
     LoRaError setBandwidth(uint8_t bandwith);
     LoRaError setChannel(uint8_t channel);
+    LoRaError setHeaderMode(bool value);
+
+    LoRaError startPacket();
+    LoRaError endPacket();
 };
 
 #endif /* LORA_DEVICE_H */

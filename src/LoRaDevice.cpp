@@ -180,3 +180,27 @@ LoRaError LoRaDevice::setChannel(uint8_t channel)
 {
     return LoRaError::UNIMPLEMENTED;
 }
+
+LoRaError LoRaDevice::setHeaderMode(bool value)
+{
+    LoRaError error = LoRaError::OK;
+
+    uint8_t modemConfig1 = 0;
+    error |= readRegister(LoRaRegister::RegModemConfig1, modemConfig1);
+    modemConfig1 &= 0b11111110;   // clear the Bandwidth and codingRate bits TODO use a mask
+    modemConfig1 |= (value << 0); // add the new header mode bit
+    error |= writeRegister(LoRaRegister::RegModemConfig1, modemConfig1);
+    m_impliciteHeader = value;
+
+    return error;
+}
+
+LoRaError LoRaDevice::startPacket()
+{
+    return LoRaError::UNIMPLEMENTED;
+}
+
+LoRaError LoRaDevice::endPacket()
+{
+    return LoRaError::UNIMPLEMENTED;
+}

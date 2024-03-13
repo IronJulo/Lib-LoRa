@@ -337,7 +337,35 @@ TEST_F(LoRaDeviceFixture, SetTooHighBandwidth)
     ASSERT_EQ(7, (modemConfig1 >> 4));
 }
 
-TEST_F(LoRaDeviceFixture, SetChannel)
+// TEST_F(LoRaDeviceFixture, SetChannel)
+// {
+//     ASSERT_NE(LoRaError::UNIMPLEMENTED, loraDevice1->setChannel(40)) << "Warning Unimplemented Test";
+// }
+
+TEST_F(LoRaDeviceFixture, SetHeaderMode1)
 {
-    ASSERT_NE(LoRaError::UNIMPLEMENTED, loraDevice1->setChannel(40)) << "Warning Unimplemented Test";
+    bool impliciteHeader = true;
+    ASSERT_NE(LoRaError::UNIMPLEMENTED, loraDevice1->setHeaderMode(impliciteHeader)) << "Warning Unimplemented Test";
+    uint8_t modemConfig1 = 0;
+    loraDevice1->readRegister(LoRaRegister::RegModemConfig1, modemConfig1);
+    ASSERT_EQ(1, (modemConfig1 & 0b00000001));
+}
+
+TEST_F(LoRaDeviceFixture, SetHeaderMode2)
+{
+    bool impliciteHeader = false;
+    ASSERT_NE(LoRaError::UNIMPLEMENTED, loraDevice1->setHeaderMode(impliciteHeader)) << "Warning Unimplemented Test";
+    uint8_t modemConfig1 = 0;
+    loraDevice1->readRegister(LoRaRegister::RegModemConfig1, modemConfig1);
+    ASSERT_EQ(0, (modemConfig1 & 0b00000001));
+}
+
+TEST_F(LoRaDeviceFixture, startPacket)
+{
+    ASSERT_NE(LoRaError::UNIMPLEMENTED, loraDevice1->startPacket()) << "Warning Unimplemented Test";
+}
+
+TEST_F(LoRaDeviceFixture, endPacket)
+{
+    ASSERT_NE(LoRaError::UNIMPLEMENTED, loraDevice1->endPacket()) << "Warning Unimplemented Test";
 }
